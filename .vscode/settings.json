@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "Makefile.*": "makefile",
+        ".env.*": "env",
+        ".env-*": "env"
+    }
+}
