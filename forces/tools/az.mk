@@ -105,25 +105,25 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 	set -x
 	az account set --subscription $(AZ_SUBSCRIPTION_ID)
 
-/az-set-sub-dev: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_DEV_ID
+/az-set-sub-dev: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_ID_DEV
 	$(M) $@+INFO
 	set -x
-	az account set --subscription $(AZ_SUBSCRIPTION_DEV_ID)
+	az account set --subscription $(AZ_SUBSCRIPTION_ID_DEV)
 
-/az-set-sub-qa: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_QA_ID
+/az-set-sub-qa: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_ID_QA
 	$(M) $@+INFO
 	set -x
-	az account set --subscription $(AZ_SUBSCRIPTION_QA_ID)
+	az account set --subscription $(AZ_SUBSCRIPTION_ID_QA)
 
-/az-set-sub-stag: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_STAG_ID
+/az-set-sub-stag: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_ID_STAG
 	$(M) $@+INFO
 	set -x
-	az account set --subscription $(AZ_SUBSCRIPTION_STAG_ID)
+	az account set --subscription $(AZ_SUBSCRIPTION_ID_STAG)
 
-/az-set-sub-prod: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_PROD_ID
+/az-set-sub-prod: ## {forces/azure} set subscription to AZ_SUBSCRIPTION_ID_PROD
 	$(M) $@+INFO
 	set -x
-	az account set --subscription $(AZ_SUBSCRIPTION_PROD_ID)
+	az account set --subscription $(AZ_SUBSCRIPTION_ID_PROD)
 
 /az-storage-whitelist-ip: ## {forces/azure} whitelist IP for $(item)
 	$(M) $@+INFO
@@ -182,8 +182,7 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 	export SSHPASS="Docker!"
 	sshpass -e ssh -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no root@127.0.0.1 -p $(AZ_WEBAPP_SSH_PORT) $(ARGVN)
 
-
-/az-psqlf-whitelist-myip: ## {forces/azure} whitelist my ip for postgres flexible server
+/az-psqlf-unwhitelist-myip: ## {forces/azure} un-whitelist my ip for postgres flexible server
 	$(M) $@+INFO
 	set -x
 
@@ -199,17 +198,21 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 		exit 1
 	fi
 
-	if [ "$(MY_IP)" == "" ]
-	then
-		$(M) $@+ERROR -- MY_IP is not set
-		exit 1
-	fi
-
 	if [ "$(RULE_NAME)" == "" ]
 	then
 		$(M) $@+ERROR -- RULE_NAME is not set
 		exit 1
 	fi
+
+	az postgres flexible-server firewall-rule delete \
+		--resource-group ${AZ_RG_NAME} \
+		--name ${AZ_PSQLF_NAME} \
+		--rule-name "${RULE_NAME}" \
+		--yes
+
+/az-psqlf-whitelist-myip: ## {forces/azure} whitelist my ip for postgres flexible server
+	$(M) $@+INFO
+	set -x
 
 	if ! SUBCOMMAND=update $(M) /az-psqlf-whitelist-myip__;
 	then

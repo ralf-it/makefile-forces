@@ -172,15 +172,7 @@ ifdef FORCES_TOOLS_ENABLE_INSTALL
 /install-tfenv-opt: ## {forces/terraform} installs tfenv in /opt/tfenv
 	$(M) $@+INFO
 	set -x
-	git clone --depth=1 https://github.com/tfutils/tfenv.git --single-branch --branch v3.0.0 /opt/tfenv
-
-/install-tfenv: ## {forces/terraform} installs tfenv	in ~/.tfenv
-	$(M) $@+INFO
-	set -x
-	git clone --depth=1 https://github.com/tfutils/tfenv.git --single-branch --branch v3.0.0 ~/.tfenv
-	mkdir -p ~/.local/bin/
-	ln -s ~/.tfenv/bin/* ~/.local/bin
-	which tfenv
+	$(SUDO) git clone --depth=1 https://github.com/tfutils/tfenv.git --single-branch --branch v3.0.0 /opt/tfenv
 
 /install-tfenv-terraform-opt: ## {forces/terraform} init tfenv in /opt/tfenv
 	$(M) $@+INFO

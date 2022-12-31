@@ -30,6 +30,7 @@ DIR_MODULES             := ../../modules
 PATH_PLAYBOOK           := $(PLAYBOOKS_DIR)/$(PLAYBOOK)
 PATH_ROOT_FROM_PLAYBOOK := $(shell echo $(PATH_PLAYBOOK) | sed 's:/*$$::' | awk -F '/' '{for(i=2; i<NF; i++) printf "../"; print ".."}')
 PATH_TF_WORK            := ../../.terraform/$(PLAYBOOK)_$(ENV)
+PATH_TF_USER_LOGS       := ../../.terraform/$(PLAYBOOK)_$(ENV)/logs
 DIR_TF_STATES           := ../../.tfstates
 DIR_CONFIGS             := ../../configs/$(ENV)
 PATH_VARS               := $(DIR_CONFIGS)/vars.tfvars
@@ -89,7 +90,7 @@ TF_PLUGIN_CACHE_DIR      ?= $(HOME)/.terraform.d/plugin-cache/$(PLAYBOOK)/$(ENV)
 TF_CLI_CONFIG_FILE       ?= $(PWD)/.terraform.tfrc
 TERRAFORM_CONFIG          = $(TF_CLI_CONFIG_FILE)
 
-TF_LOG                   ?=
+TF_LOG                   ?= TRACE
 TF_LOG_PATH              := $(PWD)/terraform/.terraform/$(PLAYBOOK)_$(ENV)/logs/$(shell date +"%s").log
 ifeq ($(wildcard $(TF_LOG_PATH)),)
 $(info Create $(TF_LOG_PATH))
@@ -131,6 +132,8 @@ ROVER_CLI_ARGS_COMMON    := -showSensitive -name $(PLAYBOOK) -tfPath $(TF) -plan
 #███ TF VARS - remote/local state
 #---------------------------------------------------------------------------------------------------
 
+TF_VAR_custom_logs_dir   := $(PATH_TF_USER_LOGS)
+
 ifeq ($(PLAYBOOK), $(PLAYBOOK_REMOTE_BACKEND))
 PATH_TF_STATE            := $(DIR_TF_STATES)/$(PLAYBOOK)-$(ENV).tfstate
 TF_CLI_ARGS_state        := -state $(PATH_TF_STATE)
@@ -167,8 +170,8 @@ endif
 #███ TF VARS - az
 #---------------------------------------------------------------------------------------------------
 
-ARM_TENANT_ID            ?= $(AZ_TENANT_ID)
-ARM_SUBSCRIPTION_ID      := $(AZ_SUBSCRIPTION_$(shell echo $(ENV) | tr a-z A-Z)_ID)
+ARM_TENANT_ID            ?= $(AZ_TENANT_ID_$(shell echo $(ENV) | tr a-z A-Z))
+ARM_SUBSCRIPTION_ID      := $(AZ_SUBSCRIPTION_ID_$(shell echo $(ENV) | tr a-z A-Z))
 
 #===================================================================================================
 #███ TF

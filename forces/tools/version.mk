@@ -19,11 +19,14 @@
 #███████████████████████████████████████████████████████████████████████████████████████████████████
 
 ifneq ($(wildcard VERSION),)
-    VERSION ?= $(file < VERSION)
+    VERSION = $(file < VERSION)
 endif
 
 /version: ## [version] show version
 	$(M) $@+INFO
+	echo $(VERSION)
+
+/version-raw: ## [version] show version raw
 	echo $(VERSION)
 
 /version-increment-patch: ## [version] increment patch version
