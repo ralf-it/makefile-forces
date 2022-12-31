@@ -275,36 +275,10 @@ endif
 makefile-list: ## {make} Show list of loaded Makefiles and .env's
 	echo $(MAKEFILE_LIST_UNIQ)
 
-makefile-forces-update: ## {<<FORCES>>} update makefile-forces to latest version from github
-	$(M) $@+INFO-B
-	set +x
-
-	TMP_MAKEFILE_FORCES=$(shell mktemp)
-
-	$(M) $@+INFO -- Downloading latest version
-	curl -s $(MAKEFILE_FORCES_URL) > $$TMP_MAKEFILE_FORCES
-
-	if [ ! -f $$TMP_MAKEFILE_FORCES ]; then
-		$(M) $@+ERROR -- Failed to download $(MAKEFILE_FORCES_URL)
-	fi
-
-	if ! cmp -s $(MAKEFILE_FORCES) $$TMP_MAKEFILE_FORCES; then
-		$(M) $@+INFO -- Backuping $(MAKEFILE_FORCES) to $(MAKEFILE_FORCES).$(DATETIME)
-		cp $(MAKEFILE_FORCES) $(MAKEFILE_FORCES).$(DATETIME)
-		cat $$TMP_MAKEFILE_FORCES > $(MAKEFILE_FORCES)
-
-		$(M) $@+INFO -- Diffing $(MAKEFILE_FORCES).$(DATETIME) and $(MAKEFILE_FORCES)...
-		diff -u $(MAKEFILE_FORCES).$(DATETIME) $(MAKEFILE_FORCES) || true
-	else
-		$(M) $@+INFO -- No update needed for $(MAKEFILE_FORCES)
-	fi
-
-	$(M) $@+INFO-E
-
 makefile-forces-pip-update-install: ## {<<FORCES>>} update and install makefile-forces from github via pip
 	$(M) $@+INFO-B
 	set +x
-	pip install git+$(MAKEFILE_FORCES_GIT).git@v$(MAKEFILE_FORCES_VERSION) --verbose --force
+	pip install git+$(MAKEFILE_FORCES_GIT).git@$(MAKEFILE_FORCES_VERSION) --verbose --force
 
 makefile-forces-version: ## {<<FORCES>>} show makefile-forces version
 	$(M) $@+INFO
@@ -493,6 +467,15 @@ gaa: ## {git} git add all
 	set -x
 	git add --all
 
+gcam: ## {git} git commit ammend with message
+	$(M) $@+INFO
+	set -x
+  ifdef GIT_AUTHOR
+	git commit --amend --author="$(GIT_AUTHOR)" --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  else
+	git commit --amend --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  endif
+
 gcae: ## {git} git commit ammend --no-edit
 	$(M) $@+INFO
 	set -x
@@ -510,6 +493,21 @@ gca: ## {git} git commit ammend
   else
 	git commit --amend --date="$(GIT_DATE)"
   endif
+
+gcm: ## {git} git commit with message
+	$(M) $@+INFO
+	set -x
+  ifdef GIT_AUTHOR
+	git commit --author="$(GIT_AUTHOR)" --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  else
+	git commit --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  endif
+
+gacp: ## {git} git add all, commit, and push
+	$(M) $@+INFO
+	$(M) gaa
+	$(M) gcm
+	$(M) gpf
 
 gp: ## {git} git push
 	$(M) $@+INFO
@@ -538,10 +536,10 @@ GACF: ## {git} git add all, commit ammend, and push force with lease
 	$(M) gcae
 	$(M) gpf
 
-GACFT: ## {git} git add all, commit ammend, push force with lease, tag force
+GACMFT: ## {git} git add all, commit ammend, push force with lease, tag force
 	$(M) $@+INFO
 	$(M) gaa
-	$(M) gcae
+	$(M) gcam
 	$(M) gpf
 	$(M) gtagf
 
