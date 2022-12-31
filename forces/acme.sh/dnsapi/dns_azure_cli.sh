@@ -30,51 +30,51 @@ dns_azure_cli_add() {
     fulldomain=$1
     txtvalue=$2
     prefix0=_acme-challenge
-    
+
     # Variables
-    # AZUREDNS_SUBSCRIPTION_ID="$AZ_SUBSCRIPTION_DEV_ID"
+    # AZUREDNS_SUBSCRIPTION_ID="$AZ_SUBSCRIPTION_ID_DEV"
     # AZUREDNS_RESOURCE_GROUP="dns-test"
     # _domain='localtest.pl'
     # fulldomain="_acme-challenge.$DNS_ZONE" # Adjust based on your needs, typically the subdomain part
     # txtvalue="2v5lAcUCXbEbAn9YkPvhhYDAphfKuX_1SxhnBQVjELg"
-    
+
     if [ "${txtvalue}" == "" ]; then
         _err "You didn't specify the Azure DNS TXT value (txtvalue)"
         return 1
     fi
-    
+
     if [ -z "${AZUREDNS_ZONE}" ]; then
         AZUREDNS_ZONE=""
         _err "You didn't specify the Azure Subscription ID (AZUREDNS_ZONE)"
         return 1
     fi
-    
+
     if [ -z "${AZUREDNS_SUBSCRIPTION_ID}" ]; then
         AZUREDNS_SUBSCRIPTION_ID=""
         _err "You didn't specify the Azure Subscription ID (AZUREDNS_SUBSCRIPTION_ID)"
         return 1
     fi
-    
+
     if [ -z "${AZUREDNS_RESOURCE_GROUP}" ]; then
         AZUREDNS_RESOURCE_GROUP=""
         _err "You didn't specify the Azure Resource Group (AZUREDNS_RESOURCE_GROUP)"
         return 1
     fi
-    
+
     prefix=$(echo ${fulldomain} | sed "s:.${AZUREDNS_ZONE}::")
-    
+
     if ! echo "${prefix}" | grep -qE "^${prefix0}"; then
         _err "The fulldomain (${fulldomain}) computed prefix (${prefix}) does not match pattern (${prefix0})."
         return 1
     fi
-    
+
     if [ "${prefix}.${AZUREDNS_ZONE}" != "${fulldomain}" ]; then
         _err "The fulldomain(${fulldomain}) does not match to pattern prefix.AZUREDNS_ZONE(${prefix}.${AZUREDNS_ZONE})."
         return 1
     fi
-    
+
     _info "Adding TXT record (name=${prefix}; value=${txtvalue}) to Azure DNS Zone: ${AZUREDNS_ZONE} (RG: ${AZUREDNS_RESOURCE_GROUP}; SUB: ${AZUREDNS_SUBSCRIPTION_ID}; FULLDOMAIN: ${fulldomain}) "
-    
+
     set -x
     az network dns record-set txt add-record \
     --subscription "${AZUREDNS_SUBSCRIPTION_ID}" \
@@ -83,9 +83,9 @@ dns_azure_cli_add() {
     --record-set-name "${prefix}" \
     --value="${txtvalue}" # <<<  ! NOTE: it solves issue with values starting with '-'
     set +x
-    
+
     _info "Record added successfully."
-    
+
     return 0
 }
 
@@ -93,39 +93,39 @@ dns_azure_cli_rm() {
     fulldomain=$1
     txtvalue=$2
     prefix0=_acme-challenge
-    
+
     if [ -z "$AZUREDNS_SUBSCRIPTION_ID" ]; then
         AZUREDNS_SUBSCRIPTION_ID=""
         _err "You didn't specify the Azure Subscription ID (AZUREDNS_SUBSCRIPTION_ID)"
         return 1
     fi
-    
+
     if [ -z "$AZUREDNS_RESOURCE_GROUP" ]; then
         AZUREDNS_RESOURCE_GROUP=""
         _err "You didn't specify the Azure Resource Group (AZUREDNS_RESOURCE_GROUP)"
         return 1
     fi
-    
+
     if [ -z "${AZUREDNS_ZONE}" ]; then
         AZUREDNS_ZONE=""
         _err "You didn't specify the Azure Subscription ID (AZUREDNS_ZONE)"
         return 1
     fi
-    
+
     prefix=$(echo ${fulldomain} | sed "s:.${AZUREDNS_ZONE}::")
-    
+
     if ! echo "${prefix}" | grep -qE "^${prefix0}"; then
         _err "The fulldomain(${fulldomain}) computed prefix(${prefix}) does not match pattern prefix0.AZUREDNS_ZONE(${prefix0}.${AZUREDNS_ZONE})."
         return 1
     fi
-    
+
     if [ "${prefix}.${AZUREDNS_ZONE}" != "${fulldomain}" ]; then
         _err "The fulldomain(${fulldomain}) does not match to pattern prefix.AZUREDNS_ZONE(${prefix}.${AZUREDNS_ZONE})."
         return 1
     fi
-    
+
     _info "Deleting TXT record (name=${prefix}; value=${txtvalue}) to Azure DNS Zone: ${AZUREDNS_ZONE} (RG: ${AZUREDNS_RESOURCE_GROUP}; SUB: ${AZUREDNS_SUBSCRIPTION_ID}; FULLDOMAIN: ${fulldomain}) "
-    
+
     az network dns record-set txt remove-record \
     --subscription "${AZUREDNS_SUBSCRIPTION_ID}" \
     --resource-group "${AZUREDNS_RESOURCE_GROUP}" \
@@ -133,8 +133,8 @@ dns_azure_cli_rm() {
     --record-set-name "${prefix}" \
     --value "${txtvalue}" \
     --keep-empty-record-set
-    
+
     _info "Record deleted successfully."
     return 0
-    
+
 }
