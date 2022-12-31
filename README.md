@@ -30,7 +30,7 @@ This project is licensed under the [Apache License, Version 2.0](LICENSE.md).
 ### PIP install/update in user home
 
 ```sh
-pip install git+https://github.com/ralf-it/makefile-forces.git@v2.0.1 --verbose --force
+pip install git+https://github.com/ralf-it/makefile-forces.git@v2.0.3 --verbose --force
 ```
 
 then use in Makefile via

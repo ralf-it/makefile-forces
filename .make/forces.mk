@@ -15,6 +15,24 @@
 ####################################################################################################
 
 ####################################################################################################
+####                                                                                            ####
+####             ███╗   ███╗  █████╗  ██╗  ██╗ ███████╗ ███████╗ ██╗ ██╗      ███████╗          ####
+####             ████╗ ████║ ██╔══██╗ ██║ ██╔╝ ██╔════╝ ██╔════╝ ██║ ██║      ██╔════╝          ####
+####             ██╔████╔██║ ███████║ █████╔╝  █████╗   █████╗   ██║ ██║      █████╗            ####
+####             ██║╚██╔╝██║ ██╔══██║ ██╔═██╗  ██╔══╝   ██╔══╝   ██║ ██║      ██╔══╝            ####
+####             ██║ ╚═╝ ██║ ██║  ██║ ██║  ██╗ ███████╗ ██║      ██║ ███████╗ ███████╗          ####
+####             ╚═╝     ╚═╝ ╚═╝  ╚═╝ ╚═╝  ╚═╝ ╚══════╝ ╚═╝      ╚═╝ ╚══════╝ ╚══════╝          ####
+####                                                                                            ####
+####                   ███████╗  ██████╗  ██████╗   ██████╗ ███████╗ ███████╗                   ####
+####                   ██╔════╝ ██╔═══██╗ ██╔══██╗ ██╔════╝ ██╔════╝ ██╔════╝                   ####
+####                   █████╗   ██║   ██║ ██████╔╝ ██║      █████╗   ███████╗                   ####
+####                   ██╔══╝   ██║   ██║ ██╔══██╗ ██║      ██╔══╝   ╚════██║                   ####
+####                   ██║      ╚██████╔╝ ██║  ██║ ╚██████╗ ███████╗ ███████║                   ####
+####                   ╚═╝       ╚═════╝  ╚═╝  ╚═╝  ╚═════╝ ╚══════╝ ╚══════╝                   ####
+####                                                                                            ####
+####                                                                                            ####
+#### [ASCII TEXT](https://patorjk.com/software/taag/#p=display&h=0&f=ANSI%20Shadow&t=output%3A) ####
+####################################################################################################
 #### Makefile forces (fith force of nature for lazy people)
 ####################################################################################################
 #### Updates (ifany): https://github.com/ralf-it/makefile-forces.git
@@ -112,7 +130,7 @@ ifneq ($(DEBUG),true)
   .SHELLFLAGS	:= -eu -o pipefail -c
 else
    # -x: print command before execution
-  .SHELLFLAGS	:= -xeu -o pipefail  -c
+  .SHELLFLAGS	:= -xeu -o pipefail -c
 endif
 
 
@@ -162,7 +180,7 @@ COWSAY        := $(shell which cowsay || echo /usr/games/cowsay)
 
 WHOAMI        := $(shell whoami)
 CPUS          := $(shell nproc)
-MY_IP         := $(shell curl -ss "http://ipv4.icanhazip.com" | tr -d [:space:])
+MY_IP         := $(shell timeout 1 curl -ss "http://ipv4.icanhazip.com" | tr -d [:space:])
 MY_IP_CIDR    := $(MY_IP)/32
 
 
@@ -173,7 +191,9 @@ MY_IP_CIDR    := $(MY_IP)/32
 
 MAKEFILE_LIST_UNIQ = `echo $(MAKEFILE_LIST)  | tr ' ' '\n' |  sort | uniq`
 
-
+ifndef DATETIME0
+DATETIME0 := $(DATETIME)
+endif
 # If command line input is defined (i.e. `$(M) INFO aladef -- --ala --ma --kota`)
 ifdef MAKECMDGOALS
     # Get first item from MAKECMDGOALS
@@ -184,10 +204,6 @@ ifdef MAKECMDGOALS
     # Get second and next items from MAKECMDGOALS
     ifndef ARGVN
     ARGVN := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-    endif
-
-    ifndef DATETIME0
-    DATETIME0 := $(DATETIME)
     endif
 
     ifndef ARGV
@@ -268,47 +284,16 @@ MAKEFILE_FORCES_URL     ?= https://raw.githubusercontent.com/ralf-it/makefile-fo
 MAKEFILE_FORCES_GIT     ?= https://github.com/ralf-it/makefile-forces
 MAKEFILE_FORCES_GIT_API ?= https://api.github.com/repos/ralf-it/makefile-forces/tags
 
-ifndef MAKEFILE_FORCES_VERSION
-MAKEFILE_FORCES_VERSION = $(shell curl $(MAKEFILE_FORCES_GIT_API) | jq '.[].name' -r | sort -r --version-sort | head -n1)
-endif
-
-makefile-list: ## {make} Show list of loaded Makefiles and .env's
-	echo $(MAKEFILE_LIST_UNIQ)
-
-makefile-forces-update: ## {<<FORCES>>} update makefile-forces to latest version from github
+makefile-forces-update: ## {<<FORCES>>} update and install makefile-forces from github via pip
 	$(M) $@+INFO-B
 	set +x
-
-	TMP_MAKEFILE_FORCES=$(shell mktemp)
-
-	$(M) $@+INFO -- Downloading latest version
-	curl -s $(MAKEFILE_FORCES_URL) > $$TMP_MAKEFILE_FORCES
-
-	if [ ! -f $$TMP_MAKEFILE_FORCES ]; then
-		$(M) $@+ERROR -- Failed to download $(MAKEFILE_FORCES_URL)
-	fi
-
-	if ! cmp -s $(MAKEFILE_FORCES) $$TMP_MAKEFILE_FORCES; then
-		$(M) $@+INFO -- Backuping $(MAKEFILE_FORCES) to $(MAKEFILE_FORCES).$(DATETIME)
-		cp $(MAKEFILE_FORCES) $(MAKEFILE_FORCES).$(DATETIME)
-		cat $$TMP_MAKEFILE_FORCES > $(MAKEFILE_FORCES)
-
-		$(M) $@+INFO -- Diffing $(MAKEFILE_FORCES).$(DATETIME) and $(MAKEFILE_FORCES)...
-		diff -u $(MAKEFILE_FORCES).$(DATETIME) $(MAKEFILE_FORCES) || true
-	else
-		$(M) $@+INFO -- No update needed for $(MAKEFILE_FORCES)
-	fi
-
-	$(M) $@+INFO-E
-
-makefile-forces-pip-update-install: ## {<<FORCES>>} update and install makefile-forces from github via pip
-	$(M) $@+INFO-B
-	set +x
-	pip install git+$(MAKEFILE_FORCES_GIT).git@v$(MAKEFILE_FORCES_VERSION) --verbose --force
+	MAKEFILE_FORCES_VERSION=`curl $(MAKEFILE_FORCES_GIT_API) | jq '.[].name' -r | sort -r --version-sort | head -n1`
+	pip install git+$(MAKEFILE_FORCES_GIT).git@$${MAKEFILE_FORCES_VERSION} --verbose --force
 
 makefile-forces-version: ## {<<FORCES>>} show makefile-forces version
 	$(M) $@+INFO
-	echo $(MAKEFILE_FORCES_VERSION)
+	MAKEFILE_FORCES_VERSION=`curl $(MAKEFILE_FORCES_GIT_API) | jq '.[].name' -r | sort -r --version-sort | head -n1`
+	echo $${MAKEFILE_FORCES_VERSION}
 
 #===================================================================================================
 #=== LINT
@@ -395,7 +380,7 @@ AZ_ACR_NAME ?= $(shell echo $(AZ_ACR) | cut -d . -f1)
 ## ! NOTE: workaround for avaiability error ...
 ## ... "Unable to get endpoints from the cloud. Server returned status code 503 for ...
 ## ... https://westeurope.management.azure.com/metadata/endpoints?api-version=2015-01-01"
-az-set-resource-manager-endpoint: ## {azure} set resource manager endpoint
+az-set-resource-manager-endpoint: ## {azure} Make sure we can connect to azure resource manager endpoint will fallback to other regions
 	$(M) $@+INFO
 	set -xeuo pipefail
 	if ! az cloud update --endpoint-resource-manager https://westeurope.management.azure.com;
@@ -493,6 +478,15 @@ gaa: ## {git} git add all
 	set -x
 	git add --all
 
+gcam: ## {git} git commit ammend with message
+	$(M) $@+INFO
+	set -x
+  ifdef GIT_AUTHOR
+	git commit --amend --author="$(GIT_AUTHOR)" --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  else
+	git commit --amend --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  endif
+
 gcae: ## {git} git commit ammend --no-edit
 	$(M) $@+INFO
 	set -x
@@ -510,6 +504,21 @@ gca: ## {git} git commit ammend
   else
 	git commit --amend --date="$(GIT_DATE)"
   endif
+
+gcm: ## {git} git commit with message
+	$(M) $@+INFO
+	set -x
+  ifdef GIT_AUTHOR
+	git commit --author="$(GIT_AUTHOR)" --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  else
+	git commit --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  endif
+
+gacp: ## {git} git add all, commit, and push
+	$(M) $@+INFO
+	$(M) gaa
+	$(M) gcm
+	$(M) gpf
 
 gp: ## {git} git push
 	$(M) $@+INFO
@@ -538,10 +547,10 @@ GACF: ## {git} git add all, commit ammend, and push force with lease
 	$(M) gcae
 	$(M) gpf
 
-GACFT: ## {git} git add all, commit ammend, push force with lease, tag force
+GACMFT: ## {git} git add all, commit ammend, push force with lease, tag force
 	$(M) $@+INFO
 	$(M) gaa
-	$(M) gcae
+	$(M) gcam
 	$(M) gpf
 	$(M) gtagf
 
@@ -706,6 +715,7 @@ uninstall-docker: ## {docker} uninstall docker
 #-- Terraform
 #---------------------------------------------------------------------------------------------------
 
+
 install-tfenv-opt: ## {terraform} install tfenv in /opt/tfenv
 	$(M) $@+INFO
 	set -x
@@ -715,6 +725,9 @@ install-tfenv: ## {terraform} install tfenv	in ~/.tfenv
 	$(M) $@+INFO
 	set -x
 	git clone --depth=1 https://github.com/tfutils/tfenv.git --single-branch --branch v3.0.0 ~/.tfenv
+	mkdir -p ~/.local/bin/
+	ln -s ~/.tfenv/bin/* ~/.local/bin
+	which tfenv
 
 init-tfenv-opt: ## {terraform} init tfenv in /opt/tfenv
 	$(M) $@+INFO
@@ -748,6 +761,52 @@ install-checkov:
 	$(M) $@+INFO
 	set -x
 	pip3 install checkov
+
+install-terraform-docs:
+	$(M) $@+INFO
+	set -x
+	curl -Lo ./terraform-docs.tar.gz https://github.com/terraform-docs/terraform-docs/releases/download/v0.17.0/terraform-docs-v0.17.0-$(shell uname)-amd64.tar.gz
+	tar -xzf terraform-docs.tar.gz
+	chmod +x terraform-docs
+	sudo mv terraform-docs /usr/local/bin/terraform-docs
+
+# install-rover:
+# 	$(M) $@+INFO
+# 	set -x
+# 	wget     https://github.com/im2nguyen/rover/releases/download/v0.3.3/rover_0.3.3_linux_amd64.zip
+
+#---------------------------------------------------------------------------------------------------
+#-- AZURE
+#---------------------------------------------------------------------------------------------------
+
+install-az-cli: ## {azure} install az cli
+	$(M) $@+INFO
+	set -x
+	pip install azure-cli
+
+install-az-cli-interactive: ## {azure} install az cli interactive
+	$(M) $@+INFO
+	set -x
+	curl -L https://aka.ms/InstallAzureCli | bash
+
+
+#---------------------------------------------------------------------------------------------------
+#-- PSQL
+#---------------------------------------------------------------------------------------------------
+
+install-psql-16:
+	$(M) $@+INFO
+	set -x
+	# First, update the package index and install required packages:
+	sudo apt update
+	sudo apt install gnupg2 wget vim
+	# Add the PostgreSQL 16 repository:
+	sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(shell lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+	# Import the repository signing key:
+	curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg
+	# Update the package list:
+	sudo apt update
+	sudo apt install postgresql-client-16*
 
 #---------------------------------------------------------------------------------------------------
 #-- Terminal
@@ -887,6 +946,10 @@ help-all: ## {help} This help.
 
 help-no-color: ## {help} This help (no color).
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_0-9-]+:.*?## / {printf "%-40s %s\n", $$1":", $$2}' $(MAKEFILE_LIST_UNIQ) | sort
+
+
+makefile-list: ## {make} Show list of loaded Makefiles and .env's
+	echo $(MAKEFILE_LIST_UNIQ)
 
 #===================================================================================================
 #== Logging
@@ -1029,3 +1092,17 @@ ERROR: ## {logging} log error
 		echo -e "$(COLOUR_RED)[$(DATE)] ERROR -  $${TARGET^^} - $${MSG}...$(END_COLOUR)"
 	fi
 	exit 1
+
+define OUTPUT_ASCI
+$(COLOUR_GREEN)
+.██████╗  ██╗   ██╗ ████████╗ ██████╗  ██╗   ██╗ ████████╗
+██╔═══██╗ ██║   ██║ ╚══██╔══╝ ██╔══██╗ ██║   ██║ ╚══██╔══╝ ██╗
+██║   ██║ ██║   ██║    ██║    ██████╔╝ ██║   ██║    ██║    ╚═╝
+██║   ██║ ██║   ██║    ██║    ██╔═══╝  ██║   ██║    ██║    ██╗
+╚██████╔╝ ╚██████╔╝    ██║    ██║      ╚██████╔╝    ██║    ╚═╝
+.╚═════╝   ╚═════╝     ╚═╝    ╚═╝       ╚═════╝     ╚═╝
+$(END_COLOUR)
+endef
+
+test-output-asci:
+	@echo -e '$(OUTPUT_ASCI)'
