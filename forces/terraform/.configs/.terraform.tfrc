@@ -1,0 +1,12 @@
+plugin_cache_dir = "/usr/local/share/terraform/plugin-cache"
+disable_checkpoint = true
+
+provider_installation {
+  filesystem_mirror {
+    path    = "/usr/local/share/terraform/providers"
+    include = ["github.com/*/*", "registry.terraform.io/*/*"]
+  }
+  direct {
+    exclude = ["github.com/*/*", "registry.terraform.io/*/*"]
+  }
+}

@@ -1,0 +1,10 @@
+.ignored
+.env.forces
+venv
+dist
+build
+.vscode
+.make
+*.egg-info
+.external
+.certs
