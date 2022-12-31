@@ -13,7 +13,7 @@ release-tag-force: /GACMTPF ## [git/tag] force push as a tag
 install-tag: ## [install/tag] Install forces
 	$(M) $@+INFO
 	set -x
-	pip install git+https://github.com/ralf-it/makefile-forces.git@v3.0.5 --verbose --force
+	pip install git+https://github.com/ralf-it/makefile-forces.git@v3.0.6 --verbose --force
 	$(M) make /install-acme-sh-contrib
 
 dev-home: ## [dev/home] Install forces in HOME
