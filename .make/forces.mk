@@ -493,6 +493,15 @@ gaa: ## {git} git add all
 	set -x
 	git add --all
 
+gcam: ## {git} git commit ammend with message
+	$(M) $@+INFO
+	set -x
+  ifdef GIT_AUTHOR
+	git commit --amend --author="$(GIT_AUTHOR)" --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  else
+	git commit --amend --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  endif
+
 gcae: ## {git} git commit ammend --no-edit
 	$(M) $@+INFO
 	set -x
@@ -510,6 +519,21 @@ gca: ## {git} git commit ammend
   else
 	git commit --amend --date="$(GIT_DATE)"
   endif
+
+gcm: ## {git} git commit with message
+	$(M) $@+INFO
+	set -x
+  ifdef GIT_AUTHOR
+	git commit --author="$(GIT_AUTHOR)" --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  else
+	git commit --date="$(GIT_DATE)" -m "$(GIT_MSG)"
+  endif
+
+gacp: ## {git} git add all, commit, and push
+	$(M) $@+INFO
+	$(M) gaa
+	$(M) gcm
+	$(M) gpf
 
 gp: ## {git} git push
 	$(M) $@+INFO
