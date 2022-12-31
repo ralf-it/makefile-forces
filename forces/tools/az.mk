@@ -187,30 +187,6 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 	$(M) $@+INFO
 	set -x
 
-	if [ "$(AZ_RG_NAME)" == "" ]
-	then
-		$(M) $@+ERROR -- AZ_RG_NAME is not set
-		exit 1
-	fi
-
-	if [ "$(AZ_PSQLF_NAME)" == "" ]
-	then
-		$(M) $@+ERROR -- AZ_PSQLF_NAME is not set
-		exit 1
-	fi
-
-	if [ "$(MY_IP)" == "" ]
-	then
-		$(M) $@+ERROR -- MY_IP is not set
-		exit 1
-	fi
-
-	if [ "$(RULE_NAME)" == "" ]
-	then
-		$(M) $@+ERROR -- RULE_NAME is not set
-		exit 1
-	fi
-
 	if ! SUBCOMMAND=update $(M) /az-psqlf-whitelist-myip__;
 	then
 		SUBCOMMAND=create $(M) /az-psqlf-whitelist-myip__
@@ -219,6 +195,12 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 /az-psqlf-whitelist-myip__: ## {forces/azure/internal} whitelist my ip for postgres flexible server
 	$(M) $@+INFO
 	set -x
+
+	if [ "$(AZ_SUB_ID)" == "" ]
+	then
+		$(M) $@+ERROR -- AZ_SUB_ID is not set
+		exit 1
+	fi
 
 	if [ "$(AZ_RG_NAME)" == "" ]
 	then
@@ -252,6 +234,7 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 
 	az postgres flexible-server firewall-rule $(SUBCOMMAND) \
 		--resource-group ${AZ_RG_NAME} \
+		--subscription ${AZ_SUB_ID} \
 		--name ${AZ_PSQLF_NAME} \
 		--rule-name "${RULE_NAME}" \
 		--start-ip-address ${MY_IP} \
