@@ -173,15 +173,7 @@ TF_CLI_ARGS_graph        := -module-depth=0
 ROVER_CLI_ARGS           := $(ROVER_CLI_ARGS_COMMON) -tfBackendConfig $(PATH_BACKEND_TFVAR)
 endif
 
-#---------------------------------------------------------------------------------------------------
-#███ TF VARS - az
-#---------------------------------------------------------------------------------------------------
 
-ARM_TENANT_ID            ?= $(AZ_TENANT_ID_$(shell echo $(ENV) | tr a-z A-Z))
-ARM_SUBSCRIPTION_ID      := $(AZ_SUBSCRIPTION_ID_$(shell echo $(ENV) | tr a-z A-Z))
-
-ARM_CLIENT_ID            ?= $(AZ_CLIENT_ID_$(shell echo $(ENV) | tr a-z A-Z))
-ARM_CLIENT_SECRET        ?= $(AZ_CLIENT_SECRET_$(shell echo $(ENV) | tr a-z A-Z))
 
 #===================================================================================================
 #███ TF

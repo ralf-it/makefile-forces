@@ -23,6 +23,12 @@ AZ_ACR_NAME ?= $(shell echo $(AZ_ACR) | cut -d . -f1)
 
 AZ_WEBAPP_SSH_PORT ?= 33623
 
+
+/az: ## {forces/az} wrapper around AZ CLI with env set by makefile-forces
+	$(M) $@+INFO
+	set -xeuo pipefail
+	az $(ARGVN)
+
 ## ! NOTE: workaround for avaiability error ...
 ## ... "Unable to get endpoints from the cloud. Server returned status code 503 for ...
 ## ... https://westeurope.management.azure.com/metadata/endpoints?api-version=2015-01-01"
@@ -37,13 +43,44 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 		fi
 	fi
 
+# /az-login-auto: ## {forces/azure} login to azure in order: SP -> User
+# 	$(M) $@+INFO
+# 	set -x
+# ifdef ARM_TENANT_ID
+#     ifdef ARM_CLIENT_ID
+#         ifdef ARM_CLIENT_SECRET
+# 	        $(M) /az-login-sp-tf
+#         endif
+#     endif
+# else ifdef AZURE_TENANT_ID
+#     ifdef AZURE_CLIENT_ID
+#         ifdef AZURE_CLIENT_SECRET
+# 	        $(M) /az-login-sp
+#         endif
+# 	else ifdef AZURE_USER_IDENTITY
+# 	    $(M) /az-login-umi
+#     else
+# 	    $(M) /az-login-tid
+#     endif
+# else
+# 	$(M) /az-login
+# endif
+
 /az-login: ## {forces/azure} login to azure
 	$(M) $@+INFO
+ifdef ARM_TENANT_ID
+	az login  --tenant $(ARM_TENANT_ID) --allow-no-subscriptions
+else
 	az login --allow-no-subscriptions
+endif
 
 /az-login-devicecode: ## {forces/azure} login to azure with device code
 	$(M) $@+INFO
+ifdef ARM_TENANT_ID
+	az login  --tenant $(ARM_TENANT_ID)  --use-device-code --allow-no-subscriptions
+else
 	az login --use-device-code --allow-no-subscriptions
+endif
 
 /az-login-tid:  ## {forces/azure} login to azure with tenant id
 	$(M) $@+INFO
@@ -54,15 +91,28 @@ AZ_WEBAPP_SSH_PORT ?= 33623
 	set -x
 	az login --service-principal --username $(AZURE_CLIENT_ID) --password $(AZURE_CLIENT_SECRET) --tenant $(AZURE_TENANT_ID) --allow-no-subscriptions
 
+/az-login-sp-tf: ## {forces/azure} login to azure with service principal with TF creds
+	$(M) $@+INFO
+	set -x
+	az login --service-principal --allow-no-subscriptions --password $(ARM_CLIENT_SECRET) --username $(ARM_CLIENT_ID) --tenant $(ARM_TENANT_ID)
+
 /az-login-smi: ## {forces/azure} login to azure with system managed identity
 	$(M) $@+INFO
 	set -x
-	az login --identity --allow-no-subscriptions
+ifdef ARM_TENANT_ID
+	az login --tenant $(ARM_TENANT_ID) --identity --allow-no-subscriptions
+else
+	az login --identity  --allow-no-subscriptions
+endif
 
 /az-login-umi: ## {forces/azure} login to azure with user managed identity
 	$(M) $@+INFO
 	set -x
-	az login --identity --username $(AZURE_USER_IDENTITY)
+ifdef ARM_TENANT_ID
+	az login --tenant $(ARM_TENANT_ID) --identity --username $(AZURE_USER_IDENTITY) --allow-no-subscriptions
+else
+	az login --identity --username $(AZURE_USER_IDENTITY)  --allow-no-subscriptions
+endif
 
 /az-login-ms-graph: ## {forces/azure} login to azure with ms graph
 	$(M) $@+INFO

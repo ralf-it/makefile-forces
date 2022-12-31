@@ -34,6 +34,46 @@ FORCES_TF_DEFINE          := $(FORCES_PATH)/terraform/define.mk
 FORCES_TF_OPERATIONS      := $(FORCES_PATH)/terraform/operations.mk
 FORCES_TF_MAKE            := time gmake -f $(FORCES_PATH)/main.mk -f $(FORCES_TF_OPERATIONS)
 
+#---------------------------------------------------------------------------------------------------
+#███ TF VARS - az
+#---------------------------------------------------------------------------------------------------
+
+ifdef ENV
+
+ifdef AZ_TENANT_ID_$(shell echo $(ENV) | tr a-z A-Z)
+    ARM_TENANT_ID            := $(AZ_TENANT_ID_$(shell echo $(ENV) | tr a-z A-Z))
+endif
+
+ifdef AZ_SUBSCRIPTION_ID_$(shell echo $(ENV) | tr a-z A-Z)
+    ARM_SUBSCRIPTION_ID      := $(AZ_SUBSCRIPTION_ID_$(shell echo $(ENV) | tr a-z A-Z))
+endif
+
+ifdef AZ_CLIENT_ID_$(shell echo $(ENV) | tr a-z A-Z)
+    ARM_CLIENT_ID            := $(AZ_CLIENT_ID_$(shell echo $(ENV) | tr a-z A-Z))
+endif
+
+ifdef AZ_CLIENT_SECRET_$(shell echo $(ENV) | tr a-z A-Z)
+    ARM_CLIENT_SECRET        := $(AZ_CLIENT_SECRET_$(shell echo $(ENV) | tr a-z A-Z))
+endif
+
+# TODO ????
+ifdef ARM_TENANT_ID
+    ifdef ARM_CLIENT_ID
+        AZURE_CONFIG_DIR := $(HOME)/.azure/login/tenant.d/$(ARM_TENANT_ID)/client.d/$(ARM_CLIENT_ID)
+    else
+        AZURE_CONFIG_DIR := $(HOME)/.azure/login/tenant.d/$(ARM_TENANT_ID)/client.d/default
+    endif
+else
+    AZURE_CONFIG_DIR := $(HOME)/.azure/login/tenant.d/default/client.d/default
+endif
+
+ifdef AZURE_CONFIG_DIR
+    ifeq ($(wildcard $(AZURE_CONFIG_DIR)),)
+        $(shell mkdir -p $(AZURE_CONFIG_DIR))
+    endif
+endif
+endif
+
 ####################################################################################################
 #████ RENDER
 ####################################################################################################

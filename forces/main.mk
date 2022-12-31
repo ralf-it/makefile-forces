@@ -827,13 +827,12 @@ include $(FORCES_PATH)/render.mk
 #███████████████████████████████████████████████████████████████████████████████████████████████████
 
 
+ifdef FORCES_TOOLS_ENABLE_TF
+    include $(FORCES_PATH)/tools/tf.mk
+endif
 
 ifdef FORCES_TOOLS_ENABLE_AZ
     include  $(FORCES_PATH)/tools/az.mk
-endif
-
-ifdef FORCES_TOOLS_ENABLE_TF
-    include $(FORCES_PATH)/tools/tf.mk
 endif
 
 ifdef FORCES_TOOLS_ENABLE_GIT
